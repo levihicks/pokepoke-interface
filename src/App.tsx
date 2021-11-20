@@ -1,13 +1,14 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import Button from '@mui/material/Button';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme';
+import Typography  from '@mui/material/Typography';
 
 function App() {
   return (
-    <div className="App">
-      <Button variant='contained'>Yo yo</Button>
-    </div>
+    <ThemeProvider theme={theme}>
+      <Typography variant="h1" color="primary">Test</Typography>
+    </ThemeProvider>
   );
 }
 
