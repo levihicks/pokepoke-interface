@@ -1,6 +1,6 @@
 import { createTheme }  from '@mui/material/styles';
 
-const colors = {
+export const colors = {
     white: '#EEE5E9',
     red: '#D64933',
     black: '#000000',
@@ -18,6 +18,7 @@ const theme = createTheme({
     palette: {
         common: {
             black: colors.black,
+            white: colors.white
         },
         primary: {
             main: colors.red,
@@ -28,6 +29,10 @@ const theme = createTheme({
         text: {
             primary: colors.white,
             secondary: colors.gray
+        },
+        background: {
+            default: colors.white,
+            paper: colors.gray
         }
     }
 });
