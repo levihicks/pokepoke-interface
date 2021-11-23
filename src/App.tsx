@@ -10,7 +10,7 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container sx={{  height: '100vh' }} >
+      <Container sx={{ height: '100vh' }}>
         <Header />
       </Container>
     </ThemeProvider>
