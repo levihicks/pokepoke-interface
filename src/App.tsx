@@ -5,6 +5,8 @@ import theme from './theme';
 import Container from '@mui/material/Container';
 import { CssBaseline } from '@mui/material';
 import Header from './components/header';
+import Pokebar from './components/pokebar';
+import PokeList from './components/poke-list';
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
       <CssBaseline />
       <Container sx={{ height: '100vh' }}>
         <Header />
+        <Pokebar />
+        <PokeList />
       </Container>
     </ThemeProvider>
   );
