@@ -1,4 +1,6 @@
 import { styled } from '@mui/system';
+import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
+import { selectWalletAddress, setWalletAddress } from '../store/walletStore';
 
 const StyledWalletConnectButton = styled('div')(({ theme }) => ({
   backgroundColor: theme.palette.background.paper,
@@ -14,8 +16,22 @@ const StyledWalletConnectButton = styled('div')(({ theme }) => ({
 }));
 
 const WalletConnectButton = () => {
+  const dispatch = useAppDispatch();
+  const walletAddress = useAppSelector(selectWalletAddress);
+
+  const clickHandler = async () => {
+    const [account] = await (window as any).ethereum.request({
+      method: 'eth_requestAccounts',
+    });
+    dispatch(setWalletAddress(account));
+  };
+
   return (
-    <StyledWalletConnectButton>Connect to wallet</StyledWalletConnectButton>
+    <StyledWalletConnectButton onClick={clickHandler}>
+      {walletAddress
+        ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(38, 42)
+        : 'Connect to wallet'}
+    </StyledWalletConnectButton>
   );
 };
 
