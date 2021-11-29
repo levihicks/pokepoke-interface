@@ -13,7 +13,7 @@ const StyledPokeList = styled('div')(({ theme }) => ({
   margin: '2rem 0 ',
 }));
 
-const rows = [
+const rows: any = [
   {
     id: 1,
     col1: '0x0667f7Bd15b401f84bB35f11FA0b4Fa4735E9d6A',
