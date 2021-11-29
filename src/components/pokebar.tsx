@@ -7,6 +7,7 @@ import { faHandPointRight } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import { abi } from '../constants/abis/PokePoke.json';
+import { CONTRACT_ADDRESS } from '../constants/web3';
 
 const StyledPokebar = styled('div')(({ theme }) => ({
   border: '3px solid ' + theme.palette.primary.main,
@@ -54,10 +55,8 @@ const Pokebar = () => {
     );
     const signer = provider.getSigner();
 
-    const pokePokeAddress = '0xcf910Bd1bafcf16929b079796d0d60c5797A074D';
-
     const pokePokeContract = new ethers.Contract(
-      pokePokeAddress,
+      CONTRACT_ADDRESS,
       abi,
       provider
     );
