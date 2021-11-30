@@ -1,4 +1,5 @@
 import { styled } from '@mui/system';
+import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { selectWalletAddress, setWalletAddress } from '../store/walletStore';
 
@@ -19,15 +20,25 @@ const WalletConnectButton = () => {
   const dispatch = useAppDispatch();
   const walletAddress = useAppSelector(selectWalletAddress);
 
-  const clickHandler = async () => {
+  const getAccount = async () => {
     const [account] = await (window as any).ethereum.request({
       method: 'eth_requestAccounts',
     });
     dispatch(setWalletAddress(account));
   };
 
+  useEffect(() => {
+    (window as any).ethereum
+      .request({
+        method: 'eth_accounts',
+      })
+      .then((accounts: string[]) => {
+        if (accounts[0]) dispatch(setWalletAddress(accounts[0]));
+      });
+  }, [dispatch]);
+
   return (
-    <StyledWalletConnectButton onClick={clickHandler}>
+    <StyledWalletConnectButton onClick={getAccount}>
       {walletAddress
         ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(38, 42)
         : 'Connect to wallet'}
