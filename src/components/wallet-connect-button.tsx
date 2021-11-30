@@ -33,7 +33,10 @@ const WalletConnectButton = () => {
         method: 'eth_accounts',
       })
       .then((accounts: string[]) => {
-        if (accounts[0]) dispatch(setWalletAddress(accounts[0]));
+        if (accounts[0]) {
+          console.log(accounts[0]);
+          dispatch(setWalletAddress(accounts[0]));
+        }
       });
   }, [dispatch]);
 

@@ -5,9 +5,7 @@ import Alert from '@mui/material/Alert';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHandPointRight } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
-import { ethers } from 'ethers';
-import { abi } from '../constants/abis/PokePoke.json';
-import { CONTRACT_ADDRESS } from '../constants/web3';
+import usePoke from '../hooks/usePoke';
 
 const StyledPokebar = styled('div')(({ theme }) => ({
   border: '3px solid ' + theme.palette.primary.main,
@@ -28,72 +26,10 @@ const PokeButton = styled('div')(({ theme }) => ({
   cursor: 'pointer',
 }));
 
-interface PokeTransaction {
-  state: 'pending' | 'error' | 'success';
-  message?: string;
-  transactionHash?: string;
-}
-
 const Pokebar = () => {
   const [pokebarInput, setPokebarInput] = useState('');
-  const [currentPokeTransaction, setCurrentPokeTransaction] =
-    useState<PokeTransaction | null>(null);
 
-  const pokeHandler = async () => {
-    const pokebarInputString = pokebarInput;
-    if (!ethers.utils.isAddress(pokebarInputString)) {
-      setCurrentPokeTransaction({
-        state: 'error',
-        message: 'Error: invalid address. Please try again.',
-      });
-      return;
-    } else if (currentPokeTransaction?.state === 'error')
-      setCurrentPokeTransaction(null);
-
-    const provider = new ethers.providers.Web3Provider(
-      (window as any).ethereum
-    );
-    const signer = provider.getSigner();
-
-    const pokePokeContract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      abi,
-      provider
-    );
-
-    const pokePokeContractWithSigner = pokePokeContract.connect(signer);
-
-    pokePokeContractWithSigner
-      .poke(pokebarInputString)
-      .then((res: any) => {
-        setCurrentPokeTransaction({
-          state: 'pending',
-          message: 'Waiting for transaction to be confirmed...',
-          transactionHash: res.hash,
-        });
-        res
-          .wait()
-          .then((receipt: any) => {
-            setCurrentPokeTransaction({
-              state: 'success',
-              message: `Successfully poked ${pokebarInputString}!`,
-              transactionHash: receipt.transactionHash,
-            });
-          })
-          .catch((err: any) =>
-            setCurrentPokeTransaction({
-              state: 'error',
-              message: 'Error: ' + err.message,
-            })
-          );
-      })
-      .catch((err: any) =>
-        setCurrentPokeTransaction({
-          state: 'error',
-          message: 'Error: ' + err.message,
-        })
-      );
-  };
+  const { poke, currentPokeTransaction } = usePoke();
 
   return (
     <>
@@ -109,7 +45,7 @@ const Pokebar = () => {
           value={pokebarInput}
           onChange={(event) => setPokebarInput(event.target.value)}
         />
-        <PokeButton onClick={pokeHandler}>
+        <PokeButton onClick={() => poke(pokebarInput)}>
           <FontAwesomeIcon
             size='lg'
             icon={faHandPointRight}

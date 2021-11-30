@@ -16,36 +16,8 @@ import { selectWalletAddress } from '../store/walletStore';
 const StyledPokeList = styled('div')(({ theme }) => ({
   color: theme.palette.primary.main,
   textAlign: 'center',
-  margin: '2rem 0 ',
+  margin: '2rem 0',
 }));
-
-const columns: GridColumns = [
-  {
-    field: 'col1',
-    headerClassName: 'poke-dapp-theme--header',
-    headerName: 'From',
-    width: 300,
-  },
-  {
-    field: 'col2',
-    headerClassName: 'poke-dapp-theme--header',
-    headerName: 'Date',
-    width: 150,
-  },
-  {
-    field: 'col3',
-    headerClassName: 'poke-dapp-theme--header',
-    headerName: '',
-    width: 150,
-    renderCell: () => {
-      return (
-        <div style={{ margin: 'auto' }}>
-          <PokeBackButton />
-        </div>
-      );
-    },
-  },
-];
 
 const useStyles = makeStyles(
   (theme) => {
@@ -55,6 +27,9 @@ const useStyles = makeStyles(
           color: theme.palette.common.black,
         },
         '& .poke-dapp-theme--header:focus': {
+          outline: 'none',
+        },
+        '& .poke-dapp-theme--header:focus-within': {
           outline: 'none',
         },
         '& .poke-dapp-theme--row': {
@@ -76,6 +51,35 @@ const PokeList = () => {
   const [currentTab, setCurrentTab] = useState<'sent' | 'received'>('sent');
   const [pokesSent, setPokesSent] = useState([]);
   const [pokesReceived, setPokesReceived] = useState([]);
+
+  const columns: GridColumns = [
+    {
+      field: 'col1',
+      headerClassName: 'poke-dapp-theme--header',
+      headerName: currentTab === 'sent' ? 'To' : 'From',
+      width: 320,
+    },
+    {
+      field: 'col2',
+      headerClassName: 'poke-dapp-theme--header',
+      headerName: 'Date',
+      width: 150,
+    },
+    {
+      field: 'col3',
+      headerClassName: 'poke-dapp-theme--header',
+      headerName: '',
+      width: 150,
+      renderCell: (params: any) => {
+        if (params.formattedValue)
+          return (
+            <div style={{ margin: 'auto' }}>
+              <PokeBackButton address={params.formattedValue} />
+            </div>
+          );
+      },
+    },
+  ];
 
   const walletAddress = useAppSelector(selectWalletAddress);
 
@@ -118,7 +122,7 @@ const PokeList = () => {
               id: p.timestamp,
               col1: p.pokedBy,
               col2: new Date(p.timestamp * 1000).toDateString(),
-              col3: null,
+              col3: p.pokedBy,
             };
           })
       );
@@ -130,62 +134,60 @@ const PokeList = () => {
   }, [getPokes]);
 
   return (
-    <>
-      <StyledPokeList>
-        <ToggleButtonGroup
-          color='primary'
-          value={currentTab}
-          exclusive
-          onChange={(event: any) => setCurrentTab(event.target.value)}
+    <StyledPokeList>
+      <ToggleButtonGroup
+        color='primary'
+        value={currentTab}
+        exclusive
+        onChange={(event: any) => setCurrentTab(event.target.value)}
+      >
+        <ToggleButton
+          sx={{ fontSize: '1.15rem', fontWeight: 'bold' }}
+          value='sent'
         >
-          <ToggleButton
-            sx={{ fontSize: '1.15rem', fontWeight: 'bold' }}
-            value='sent'
-          >
-            Sent ({pokesSent.length})
-          </ToggleButton>
-          <ToggleButton
-            sx={{ fontSize: '1.15rem', fontWeight: 'bold' }}
-            value='received'
-          >
-            Received ({pokesReceived.length})
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <div
-          style={{
-            display: 'flex',
-            height: '100%',
-            paddingTop: '1rem',
-            width: 602,
-            margin: 'auto',
-          }}
-          className={classes.root}
+          Sent ({pokesSent.length})
+        </ToggleButton>
+        <ToggleButton
+          sx={{ fontSize: '1.15rem', fontWeight: 'bold' }}
+          value='received'
         >
-          <div style={{ flexGrow: 1 }}>
-            {(currentTab === 'sent' && pokesSent.length === 0) ||
-            (currentTab === 'received' && pokesReceived.length === 0) ? (
-              <Chip
-                variant='outlined'
-                color='primary'
-                label={`No pokes ${currentTab}.`}
-                sx={{ fontWeight: 'bold', marginTop: '1rem' }}
-              />
-            ) : (
-              <DataGrid
-                rows={currentTab === 'sent' ? pokesSent : pokesReceived}
-                columns={columns}
-                hideFooter
-                autoHeight
-                disableSelectionOnClick
-                disableColumnMenu
-                getRowClassName={() => 'poke-dapp-theme--row'}
-                getCellClassName={() => 'poke-dapp-theme--cell'}
-              />
-            )}
-          </div>
+          Received ({pokesReceived.length})
+        </ToggleButton>
+      </ToggleButtonGroup>
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          paddingTop: '1rem',
+          width: 622,
+          margin: 'auto',
+        }}
+        className={classes.root}
+      >
+        <div style={{ flexGrow: 1, marginBottom: '2rem' }}>
+          {(currentTab === 'sent' && pokesSent.length === 0) ||
+          (currentTab === 'received' && pokesReceived.length === 0) ? (
+            <Chip
+              variant='outlined'
+              color='primary'
+              label={`No pokes ${currentTab}.`}
+              sx={{ fontWeight: 'bold', marginTop: '1rem' }}
+            />
+          ) : (
+            <DataGrid
+              rows={currentTab === 'sent' ? pokesSent : pokesReceived}
+              columns={columns}
+              hideFooter
+              autoHeight
+              disableSelectionOnClick
+              disableColumnMenu
+              getRowClassName={() => 'poke-dapp-theme--row'}
+              getCellClassName={() => 'poke-dapp-theme--cell'}
+            />
+          )}
         </div>
-      </StyledPokeList>
-    </>
+      </div>
+    </StyledPokeList>
   );
 };
 
