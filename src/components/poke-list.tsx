@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import { styled } from '@mui/system';
@@ -47,10 +47,14 @@ const useStyles = makeStyles(
   { defaultTheme }
 );
 
+const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+
+const pokePokeContract = new ethers.Contract(CONTRACT_ADDRESS, abi, provider);
+
 const PokeList = () => {
   const [currentTab, setCurrentTab] = useState<'sent' | 'received'>('sent');
-  const [pokesSent, setPokesSent] = useState([]);
-  const [pokesReceived, setPokesReceived] = useState([]);
+  const [pokesSent, setPokesSent] = useState<any[]>([]);
+  const [pokesReceived, setPokesReceived] = useState<any[]>([]);
 
   const columns: GridColumns = [
     {
@@ -67,6 +71,22 @@ const PokeList = () => {
     },
     {
       field: 'col3',
+      headerClassName: 'poke-dapp-theme--header',
+      headerName: 'Txn',
+      width: 150,
+      headerAlign: 'center',
+      renderCell: (params: any) => {
+        return (
+          <div style={{ margin: 'auto' }}>
+            <a href={`https://etherscan.io/tx/${params.formattedValue}`}>
+              View
+            </a>
+          </div>
+        );
+      },
+    },
+    {
+      field: 'col4',
       headerClassName: 'poke-dapp-theme--header',
       headerName: '',
       width: 150,
@@ -85,53 +105,59 @@ const PokeList = () => {
 
   const classes = useStyles();
 
-  const getPokes = useCallback(async () => {
-    const provider = new ethers.providers.Web3Provider(
-      (window as any).ethereum
-    );
+  const sentFilter = useMemo(
+    () => pokePokeContract.filters.PokeEvent(null, null, walletAddress),
+    [walletAddress]
+  );
 
-    const pokePokeContract = new ethers.Contract(
-      CONTRACT_ADDRESS,
-      abi,
-      provider
-    );
+  const receivedFilter = useMemo(
+    () => pokePokeContract.filters.PokeEvent(null, walletAddress, null),
+    [walletAddress]
+  );
+
+  const getPokes = useCallback(async () => {
     if (walletAddress) {
-      const newPokes = await pokePokeContract.viewPokes(walletAddress);
+      let sentPokes = await pokePokeContract.queryFilter(sentFilter);
       setPokesSent(
-        newPokes
-          .filter(
-            (p: any) => p.pokedBy.toLowerCase() === walletAddress.toLowerCase()
-          )
-          .map((p: any) => {
-            return {
-              id: p.timestamp,
-              col1: p.recipient,
-              col2: new Date(p.timestamp * 1000).toDateString(),
-              col3: null,
-            };
-          })
+        sentPokes.map((p: any) => {
+          return {
+            id: p.transactionHash,
+            col1: p.args.to,
+            col2: new Date(p.args.timestamp * 1000).toDateString(),
+            col3: p.transactionHash,
+            col4: null,
+          };
+        })
       );
+
+      let receivedPokes = await pokePokeContract.queryFilter(receivedFilter);
       setPokesReceived(
-        newPokes
-          .filter(
-            (p: any) =>
-              p.recipient.toLowerCase() === walletAddress.toLowerCase()
-          )
-          .map((p: any) => {
-            return {
-              id: p.timestamp,
-              col1: p.pokedBy,
-              col2: new Date(p.timestamp * 1000).toDateString(),
-              col3: p.pokedBy,
-            };
-          })
+        receivedPokes.map((p: any) => {
+          return {
+            id: p.transactionHash,
+            col1: p.args.from,
+            col2: new Date(p.args.timestamp * 1000).toDateString(),
+            col3: p.transactionHash,
+            col4: p.args.from,
+          };
+        })
       );
     }
-  }, [walletAddress]);
+  }, [walletAddress, receivedFilter, sentFilter]);
 
   useEffect(() => {
     getPokes();
   }, [getPokes]);
+
+  useEffect(() => {
+    if (walletAddress) {
+      pokePokeContract.on(sentFilter, getPokes);
+      pokePokeContract.on(receivedFilter, getPokes);
+    }
+    return () => {
+      pokePokeContract.removeAllListeners();
+    };
+  }, [walletAddress, getPokes, receivedFilter, sentFilter]);
 
   return (
     <StyledPokeList>
@@ -159,7 +185,7 @@ const PokeList = () => {
           display: 'flex',
           height: '100%',
           paddingTop: '1rem',
-          width: 622,
+          width: 772,
           margin: 'auto',
         }}
         className={classes.root}
