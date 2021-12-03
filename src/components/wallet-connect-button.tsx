@@ -27,6 +27,20 @@ const WalletConnectButton = () => {
     dispatch(setWalletAddress(account));
   };
 
+  const walletChangeHandler = (accounts: string[]) => {
+    dispatch(setWalletAddress(accounts[0]));
+  };
+
+  useEffect(() => {
+    (window as any).ethereum.on('accountsChanged', walletChangeHandler);
+    return () => {
+      (window as any).ethereum.removeListener(
+        'accountsChanged',
+        walletChangeHandler
+      );
+    };
+  });
+
   useEffect(() => {
     (window as any).ethereum
       .request({
@@ -34,7 +48,6 @@ const WalletConnectButton = () => {
       })
       .then((accounts: string[]) => {
         if (accounts[0]) {
-          console.log(accounts[0]);
           dispatch(setWalletAddress(accounts[0]));
         }
       });
