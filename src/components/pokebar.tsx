@@ -2,6 +2,7 @@ import { styled } from '@mui/system';
 import { colors } from '../theme';
 import InputBase from '@mui/material/InputBase';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHandPointRight } from '@fortawesome/free-solid-svg-icons';
 import { useState } from 'react';
@@ -45,13 +46,15 @@ const Pokebar = () => {
           value={pokebarInput}
           onChange={(event) => setPokebarInput(event.target.value)}
         />
-        <PokeButton onClick={() => poke(pokebarInput)}>
-          <FontAwesomeIcon
-            size='lg'
-            icon={faHandPointRight}
-            color={colors.white}
-          />
-        </PokeButton>
+        <Tooltip title='Poke' arrow>
+          <PokeButton onClick={() => poke(pokebarInput)}>
+            <FontAwesomeIcon
+              size='lg'
+              icon={faHandPointRight}
+              color={colors.white}
+            />
+          </PokeButton>
+        </Tooltip>
       </StyledPokebar>
       {currentPokeTransaction && (
         <Alert
