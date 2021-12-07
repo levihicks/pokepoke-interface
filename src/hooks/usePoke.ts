@@ -13,7 +13,15 @@ const usePoke = () => {
   const [currentPokeTransaction, setCurrentPokeTransaction] =
     useState<PokeTransaction | null>(null);
 
-  const poke = (addr: string) => {
+  const poke = async (addr: string) => {
+    const provider = new ethers.providers.Web3Provider(
+      (window as any).ethereum
+    );
+
+    if (addr.includes('.')) {
+      const addrResolvedFromName = await provider.resolveName(addr);
+      if (addrResolvedFromName) addr = addrResolvedFromName;
+    }
     if (!ethers.utils.isAddress(addr)) {
       setCurrentPokeTransaction({
         state: 'error',
@@ -23,16 +31,13 @@ const usePoke = () => {
     } else if (currentPokeTransaction?.state === 'error')
       setCurrentPokeTransaction(null);
 
-    const provider = new ethers.providers.Web3Provider(
-      (window as any).ethereum
-    );
-    const signer = provider.getSigner();
-
     const pokePokeContract = new ethers.Contract(
       CONTRACT_ADDRESS,
       abi,
       provider
     );
+
+    const signer = provider.getSigner();
 
     const pokePokeContractWithSigner = pokePokeContract.connect(signer);
 

@@ -22,7 +22,7 @@ function App() {
     (window as any).ethereum
       .request({ method: 'eth_chainId' })
       .then((res: string) => {
-        if (['0x539'].indexOf(res) === -1) {
+        if (['0x3'].indexOf(res) === -1) {
           setDialogOpen(true);
         }
       });

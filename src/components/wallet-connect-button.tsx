@@ -1,5 +1,6 @@
 import { styled } from '@mui/system';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ethers } from 'ethers';
 import { useAppDispatch, useAppSelector } from '../hooks/reduxHooks';
 import { selectWalletAddress, setWalletAddress } from '../store/walletStore';
 
@@ -19,6 +20,21 @@ const StyledWalletConnectButton = styled('div')(({ theme }) => ({
 const WalletConnectButton = () => {
   const dispatch = useAppDispatch();
   const walletAddress = useAppSelector(selectWalletAddress);
+  const [ENSName, setENSName] = useState<string | null>(null);
+
+  const getENS = async (walletAddress: string | null) => {
+    if (walletAddress) {
+      const provider = new ethers.providers.Web3Provider(
+        (window as any).ethereum
+      );
+      const userENSName = await provider.lookupAddress(walletAddress);
+      setENSName(userENSName);
+    }
+  };
+
+  useEffect(() => {
+    getENS(walletAddress);
+  }, [walletAddress]);
 
   const getAccount = async () => {
     const [account] = await (window as any).ethereum.request({
@@ -56,7 +72,8 @@ const WalletConnectButton = () => {
   return (
     <StyledWalletConnectButton onClick={getAccount}>
       {walletAddress
-        ? walletAddress.slice(0, 6) + '...' + walletAddress.slice(38, 42)
+        ? ENSName ||
+          walletAddress.slice(0, 6) + '...' + walletAddress.slice(38, 42)
         : 'Connect to wallet'}
     </StyledWalletConnectButton>
   );
